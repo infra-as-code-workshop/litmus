@@ -1,0 +1,47 @@
+apiVersion: litmuschaos.io/v1alpha1
+kind: ChaosEngine
+metadata:
+  name: metadata-chaos
+  namespace: default
+spec:
+  appinfo:
+    appns: 'default'
+    applabel: 'app=metadata'
+    appkind: 'deployment'
+  # It can be true/false
+  annotationCheck: 'false'
+  # It can be active/stop
+  engineState: 'active'
+  chaosServiceAccount: pod-delete-sa
+  monitoring: false
+  # It can be delete/retain
+  jobCleanUpPolicy: 'delete'
+  experiments:
+    - name: pod-delete
+      spec:
+        components:
+          env:
+            # set chaos duration (in sec) as desired
+            - name: TOTAL_CHAOS_DURATION
+              value: '60'
+
+            # set chaos interval (in sec) as desired
+            - name: CHAOS_INTERVAL
+              value: '30'
+              
+            # pod failures without '--force' & default terminationGracePeriodSeconds
+            - name: FORCE
+              value: 'true'
+        probe:
+          - name: "check-metadata-url"
+            type: "httpProbe"
+            httpProbe/inputs:
+              url: "http://metadata:8080/metadata"
+              expectedResponseCode: "200"
+              insecureSkipVerify: false
+            mode: "Continuous"
+            runProperties:
+              probeTimeout: 2
+              interval: 1
+              retry: 1
+              probePollingInterval: 1              

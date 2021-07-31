@@ -1,0 +1,59 @@
+# chaosengine.yaml
+apiVersion: litmuschaos.io/v1alpha1
+kind: ChaosEngine
+metadata:
+  name: bookinfo-network-chaos
+  namespace: default
+spec:
+  # It can be delete/retain
+  jobCleanUpPolicy: 'delete'
+  # It can be true/false
+  annotationCheck: 'false'
+  # It can be active/stop
+  engineState: 'active'
+  monitoring: false
+  appinfo: 
+    appns: 'default'
+    # FYI, To see app label, apply kubectl get pods --show-labels
+    applabel: 'app=details'
+    appkind: 'deployment'
+  chaosServiceAccount: pod-network-loss-sa 
+  experiments:
+    - name: pod-network-loss
+      spec:
+        components:
+          env:
+
+            #Network interface inside target container
+            - name: NETWORK_INTERFACE
+              value: 'eth0'    
+
+            - name: NETWORK_PACKET_LOSS_PERCENTAGE
+              value: '50'
+
+            - name: TOTAL_CHAOS_DURATION
+              value: '100' # in seconds
+
+            # provide the name of container runtime
+            # for litmus LIB, it supports docker, containerd, crio
+            # for pumba LIB, it supports docker only
+            - name: CONTAINER_RUNTIME
+              value: 'containerd'
+
+            # provide the socket file path
+            - name: SOCKET_PATH
+              value: '/run/k3s/containerd/containerd.sock'
+        probe:
+          - name: "check-frontend-access-url"
+            type: "httpProbe"
+            httpProbe/inputs:
+              # url: "http://details:9080/details/1"
+              url: "http://productpage:9080/api/v1/products/1"
+              expectedResponseCode: "200"
+              insecureSkipVerify: false
+            mode: "Continuous"
+            runProperties:
+              probeTimeout: 5
+              interval: 5
+              retry: 1
+              probePollingInterval: 2            
