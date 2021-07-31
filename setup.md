@@ -3,11 +3,8 @@
 ## STEP 2: Install k3d
 brew install k3d
 
-## STEP 3: Install OPA
-brew install opa
-
 ## STEP 3: Create Kubernetes Cluster (using K3D locally)
-k3d cluster create default --agents 3 --image docker.io/rancher/k3s:v1.21.1-k3s1
+k3d cluster create default --agents 3 --image docker.io/rancher/k3s:v1.21.3-k3s1
  
 ## STEP 4: Deploy Book Info application
 kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.10/samples/bookinfo/platform/kube/bookinfo.yaml
